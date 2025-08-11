@@ -1,0 +1,43 @@
+name: Upload Artifacts
+
+# Trigger the workflow on push to main branch and pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  upload-artifacts:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # Upload the Test.txt file as an artifact
+    - name: Upload Test.txt as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-file-artifact
+        path: Files/Test.txt
+        retention-days: 30
+    
+    # Upload the entire Files directory as an artifact
+    - name: Upload Files directory as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: files-directory-artifact
+        path: Files/
+        retention-days: 30
+    
+    # Optional: Create a summary of uploaded artifacts
+    - name: Create artifact summary
+      run: |
+        echo "## Artifacts Uploaded 📁" >> $GITHUB_STEP_SUMMARY
+        echo "- **test-file-artifact**: Contains Test.txt file" >> $GITHUB_STEP_SUMMARY
+        echo "- **files-directory-artifact**: Contains entire Files directory" >> $GITHUB_STEP_SUMMARY
+        echo "- **Retention**: 30 days" >> $GITHUB_STEP_SUMMARY
