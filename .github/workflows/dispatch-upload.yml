@@ -1,0 +1,17 @@
+name: Upload via Repository Dispatch
+
+on:
+  repository_dispatch:
+    types: [upload-external-file]
+
+jobs:
+  upload-from-external:
+    runs-on: self-hosted
+    
+    steps:
+    - name: Upload file from payload
+      uses: actions/upload-artifact@v4
+      with:
+        name: dispatched-artifact
+        path: ${{ github.event.client_payload.file_path }}
+        retention-days: 30

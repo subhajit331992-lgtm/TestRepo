@@ -1,0 +1,5 @@
+Programs related to Error Handling : 
+
+- Write a function that takes two numbers as arguments and divides the first number by the second number. Handle any potential errors that may occur, such as division by zero, and return an appropriate error message.
+
+Create a function that takes an array as an argument and returns the sum of all the numbers in the array. Handle any errors that may occur, such as if the argument is not an array or if any of the elements in the array are not numbers. Return an appropriate error message in such cases.

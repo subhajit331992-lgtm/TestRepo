@@ -1,0 +1,38 @@
+name: Upload External Files as Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_path:
+        description: 'External file path to upload'
+        required: true
+        default: 'C:\external\myfile.txt'
+
+jobs:
+  upload-external-artifacts:
+    runs-on: self-hosted  # Uses your local machine
+    
+    steps:
+    - name: Check if file exists
+      run: |
+        if (Test-Path "${{ github.event.inputs.file_path }}") {
+          Write-Host "✓ File found: ${{ github.event.inputs.file_path }}"
+        } else {
+          Write-Host "✗ File not found: ${{ github.event.inputs.file_path }}"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Upload external file as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: external-file-artifact
+        path: ${{ github.event.inputs.file_path }}
+        retention-days: 30
+    
+    - name: Upload entire external directory
+      uses: actions/upload-artifact@v4
+      with:
+        name: external-directory-artifact
+        path: C:\MyExternalFolder\*  # Upload from any directory
+        retention-days: 30
