@@ -63,6 +63,7 @@ foreach ($artifact in $artifacts.artifacts) {
     }
     catch {
         Write-Host "✗ Failed to download $($artifact.name): $($_.Exception.Message)" -ForegroundColor Red
+
     }
 }
 
