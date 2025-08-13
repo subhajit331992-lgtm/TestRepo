@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$Token,
-    [switch]$AutoExtract
+    [switch]$AutoExtract,
+    [string]$ArtifactName = "test-file-artifact"
 )
 
 $owner = "subhajit331992-lgtm"
@@ -22,22 +23,32 @@ try {
     $artifactsUrl = "https://api.github.com/repos/$owner/$repo/actions/runs/$($latestRun.id)/artifacts"
     $artifacts = Invoke-RestMethod -Uri $artifactsUrl -Headers $headers
     
+    $downloadDir = "downloaded-artifacts"
+    if (-not (Test-Path $downloadDir)) {
+        New-Item -ItemType Directory -Path $downloadDir | Out-Null
+    }
+
     foreach ($artifact in $artifacts.artifacts) {
-        Write-Host "Processing: $($artifact.name)" -ForegroundColor Yellow
+        # Filter by artifact name if specified
+        if ($ArtifactName -and $artifact.name -ne $ArtifactName) {
+            continue
+        }
         
-        # Download ZIP
-        $zipPath = "$($artifact.name).zip"
+        Write-Host "Processing: $($artifact.name)" -ForegroundColor Yellow
+
+        # Download ZIP to downloadDir
+        $zipPath = Join-Path $downloadDir "$($artifact.name).zip"
         $downloadUrl = $artifact.archive_download_url
         Invoke-WebRequest -Uri $downloadUrl -Headers $headers -OutFile $zipPath
-        
+
         if ($AutoExtract) {
-            # Extract ZIP
-            $extractPath = $artifact.name
+            # Extract ZIP to a subfolder in downloadDir
+            $extractPath = Join-Path $downloadDir $artifact.name
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-            
+
             # Remove ZIP file
             Remove-Item $zipPath
-            
+
             Write-Host "✓ Extracted to: $extractPath" -ForegroundColor Green
         } else {
             Write-Host "✓ Downloaded: $zipPath" -ForegroundColor Green
