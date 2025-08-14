@@ -1,0 +1,78 @@
+name: Upload Custom Artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      item_path:
+        description: 'Path to file or folder to upload (relative to repository root)'
+        required: true
+        default: 'Files/Test.txt'
+      artifact_name:
+        description: 'Custom name for the artifact'
+        required: true
+        default: 'my-custom-artifact'
+      item_type:
+        description: 'Type of item to upload'
+        required: true
+        default: 'file'
+        type: choice
+        options:
+        - file
+        - folder
+      retention_days:
+        description: 'How long to keep the artifact (1-90 days)'
+        required: false
+        default: '30'
+
+jobs:
+  upload-custom-artifact:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # Validate that the specified path exists
+    - name: Validate path exists
+      run: |
+        if [ ! -e "${{ github.event.inputs.item_path }}" ]; then
+          echo "❌ Error: Path '${{ github.event.inputs.item_path }}' does not exist!"
+          exit 1
+        fi
+        
+        if [ "${{ github.event.inputs.item_type }}" == "file" ] && [ ! -f "${{ github.event.inputs.item_path }}" ]; then
+          echo "❌ Error: '${{ github.event.inputs.item_path }}' is not a file!"
+          exit 1
+        fi
+        
+        if [ "${{ github.event.inputs.item_type }}" == "folder" ] && [ ! -d "${{ github.event.inputs.item_path }}" ]; then
+          echo "❌ Error: '${{ github.event.inputs.item_path }}' is not a folder!"
+          exit 1
+        fi
+        
+        echo "✅ Path validation successful!"
+        echo "📁 Uploading ${{ github.event.inputs.item_type }}: ${{ github.event.inputs.item_path }}"
+    
+    # Upload the specified file or folder as an artifact
+    - name: Upload custom artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.inputs.artifact_name }}
+        path: ${{ github.event.inputs.item_path }}
+        retention-days: ${{ github.event.inputs.retention_days }}
+    
+    # Create a summary of what was uploaded
+    - name: Create upload summary
+      run: |
+        echo "## 📦 Artifact Upload Complete! 🎉" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Details:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Artifact Name**: \`${{ github.event.inputs.artifact_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Item Type**: ${{ github.event.inputs.item_type }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Source Path**: \`${{ github.event.inputs.item_path }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Retention**: ${{ github.event.inputs.retention_days }} days" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Download Options:" >> $GITHUB_STEP_SUMMARY
+        echo "1. **GitHub UI**: Go to [Actions → This Run → Artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "2. **PowerShell Script**: Use \`download-and-extract.ps1\` to download programmatically" >> $GITHUB_STEP_SUMMARY
