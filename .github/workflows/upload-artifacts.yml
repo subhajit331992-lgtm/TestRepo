@@ -3,11 +3,20 @@ name: Upload Artifacts
 # Trigger the workflow on push to main branch and pull requests
 on:
   push:
-    branches: [ main ]
+    branches: [ main1 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main1 ]
   # Allow manual triggering of the workflow
   workflow_dispatch:
+    inputs:
+      file_path:
+        description: 'File path to upload (relative to repository root)'
+        required: false
+        default: 'Files/Test.txt'
+      artifact_name:
+        description: 'Name for the artifact'
+        required: false
+        default: 'custom-file-artifact'
 
 jobs:
   upload-artifacts:
@@ -18,26 +27,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    # Upload the Test.txt file as an artifact
+    # Upload custom file if manually triggered with inputs
+    - name: Upload custom file as artifact
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.file_path
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.inputs.artifact_name }}
+        path: ${{ github.event.inputs.file_path }}
+        retention-days: 30
+    
+    # Upload the Test.txt file as an artifact (for automatic triggers)
     - name: Upload Test.txt as artifact
+      if: github.event_name != 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
         name: test-file-artifact
         path: Files/Test.txt
         retention-days: 30
     
-    # Upload the entire Files directory as an artifact
+    # Upload the entire Files directory as an artifact (for automatic triggers)
     - name: Upload Files directory as artifact
+      if: github.event_name != 'workflow_dispatch'
       uses: actions/upload-artifact@v4
       with:
         name: files-directory-artifact
         path: Files/
         retention-days: 30
     
-    # Optional: Create a summary of uploaded artifacts
+    # Create a summary of uploaded artifacts
     - name: Create artifact summary
       run: |
         echo "## Artifacts Uploaded 📁" >> $GITHUB_STEP_SUMMARY
-        echo "- **test-file-artifact**: Contains Test.txt file" >> $GITHUB_STEP_SUMMARY
-        echo "- **files-directory-artifact**: Contains entire Files directory" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **test-file-artifact**: Contains Test.txt file" >> $GITHUB_STEP_SUMMARY
+          echo "- **files-directory-artifact**: Contains entire Files directory" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "- **Retention**: 30 days" >> $GITHUB_STEP_SUMMARY
