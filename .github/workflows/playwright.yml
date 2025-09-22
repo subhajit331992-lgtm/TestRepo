@@ -1,5 +1,3 @@
-name: Playwright Tests
-
 on:
   push:
     branches: [ main ]
@@ -25,3 +23,12 @@ jobs:
           cd playwright
           npx playwright install --with-deps
           npm test
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright/playwright-report
+      - name: Add Playwright report link to summary
+        run: |
+          echo "## Playwright HTML Report" >> $GITHUB_STEP_SUMMARY
+          echo "Download and open <b>index.html</b> from the <a href=\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\">Artifacts section</a> below." >> $GITHUB_STEP_SUMMARY
