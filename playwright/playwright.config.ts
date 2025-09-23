@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 30000,
   retries: 0,
   use: {
-    headless: false,
+    headless: false, 
     viewport: { width: 1280, height: 720 },
   },
   reporter: [['html', { outputFolder: 'playwright-report', open: 'never' }]],
