@@ -5,8 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: self-hosted
+  test-runner-1:
+    runs-on: self-hosted-1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,17 +18,45 @@ jobs:
         run: |
           cd playwright
           npm install
-      - name: Run Playwright tests
+      - name: Run example.spec.ts
         run: |
           cd playwright
           npx playwright install --with-deps
-          npm test
+          npx playwright test example.spec.ts
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-runner-1
           path: playwright/playwright-report
       - name: Add Playwright report link to summary
         run: |
-          echo "## Playwright HTML Report" >> $GITHUB_STEP_SUMMARY
+          echo "## Playwright HTML Report (Runner 1)" >> $GITHUB_STEP_SUMMARY
+          echo "Download and open <b>index.html</b> from the <a href=\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\">Artifacts section</a> below." >> $GITHUB_STEP_SUMMARY
+
+  test-runner-2:
+    runs-on: self-hosted-2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: |
+          cd playwright
+          npm install
+      - name: Run example.spec1.ts
+        run: |
+          cd playwright
+          npx playwright install --with-deps
+          npx playwright test example.spec1.ts
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-runner-2
+          path: playwright/playwright-report
+      - name: Add Playwright report link to summary
+        run: |
+          echo "## Playwright HTML Report (Runner 2)" >> $GITHUB_STEP_SUMMARY
           echo "Download and open <b>index.html</b> from the <a href=\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\">Artifacts section</a> below." >> $GITHUB_STEP_SUMMARY
